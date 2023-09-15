@@ -1,33 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:todo/app/task_edit/data/repository/task_edit_repository.dart';
+import 'package:todo/app/task_edit/domain/usecase/task_edit_use_case.dart';
+
 import '../../data/model/task_model.dart';
 
 class TasksController {
-  final TaskEditRepository _taskRepository;
+  final TaskEditUseCase useCase;
 
-  TextEditingController title = TextEditingController();
+  ValueNotifier<TextEditingController> title =
+      ValueNotifier(TextEditingController());
 
-  TextEditingController note = TextEditingController();
+  ValueNotifier<TextEditingController> note =
+      ValueNotifier(TextEditingController());
 
-  TasksController(this._taskRepository);
+  ValueNotifier<String> sharedTaskLists = ValueNotifier<String>('');
+
+  TasksController(this.useCase);
 
   // Obter um stream de tarefas
   Stream<List<Task>> get tasksStream {
-    return _taskRepository.getTasksStream();
+    return useCase.getTasksStream();
   }
 
   // Adicionar uma nova tarefa
   Future<void> addTask(Task task) {
-    return _taskRepository.addTask(task);
+    return useCase.addTask(task);
   }
 
   // Atualizar uma tarefa existente
   Future<void> updateTask(Task task) {
-    return _taskRepository.updateTask(task);
+    return useCase.updateTask(task);
   }
 
   // Deletar uma tarefa
   Future<void> deleteTask(Task task) {
-    return _taskRepository.deleteTask(task);
+    return useCase.deleteTask(task);
+  }
+
+  // Compartilhar uma lista de tarefas e obter um código único
+  Future<void> shareTaskList(String taskListId) async {
+    String uniqueCode = await useCase.shareTaskList(taskListId);
+    sharedTaskLists.value = uniqueCode;
   }
 }

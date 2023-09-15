@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:todo/app/task_edit/data/model/task_model.dart';
 
@@ -14,12 +16,16 @@ class TaskDataSourceImpl implements TaskEditDataSource {
 
   @override
   Future<void> updateTask(Task task) {
-    return _tasksRef.child(task.key!).update(task.toJson());
+    if (task.taskKey == null) {
+      throw ArgumentError(
+          'A chave da tarefa não pode ser nula ao atualizar a tarefa.');
+    }
+    return _tasksRef.child(task.taskKey!).update(task.toJson());
   }
 
   @override
   Future<void> deleteTask(Task task) {
-    return _tasksRef.child(task.key!).remove();
+    return _tasksRef.child(task.taskKey!).remove();
   }
 
   @override
@@ -33,5 +39,20 @@ class TaskDataSourceImpl implements TaskEditDataSource {
       }
       return tasks;
     });
+  }
+
+  String _generateUniqueCode() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    return List.generate(8, (index) => chars[Random().nextInt(chars.length)])
+        .join();
+  }
+
+  @override
+  Future<String> shareTaskList(String taskListId) async {
+    final uniqueCode = _generateUniqueCode();
+
+    await _tasksRef.child('sharedTaskLists').child(uniqueCode).set(taskListId);
+
+    return uniqueCode;
   }
 }

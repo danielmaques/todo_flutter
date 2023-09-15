@@ -4,9 +4,11 @@ class TaskWidget extends StatelessWidget {
   const TaskWidget({
     Key? key,
     required this.onTap,
+    required this.title,
   }) : super(key: key);
 
   final void Function() onTap;
+  final String title;
 
   @override
   Widget build(BuildContext context) {
@@ -37,24 +39,24 @@ class TaskWidget extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-            const Column(
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Task 1',
-                  style: TextStyle(
+                  title,
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(
+                const Text(
                   'Status: In Progress',
                   style: TextStyle(
                     fontSize: 15,
                   ),
                 ),
-                Text(
+                const Text(
                   'Due Date: 10/10/2022',
                 ),
               ],

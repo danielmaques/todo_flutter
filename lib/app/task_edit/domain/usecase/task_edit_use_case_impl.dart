@@ -22,10 +22,14 @@ class TaskEditUseCaseImpl implements TaskEditUseCase {
   Future<void> updateTask(Task task) {
     return _taskEditRepository.updateTask(task);
   }
-  
+
   @override
   Stream<List<Task>> getTasksStream() {
     return _taskEditRepository.getTasksStream();
   }
-  
+
+  @override
+  Future<String> shareTaskList(String taskListId) {
+    return _taskEditRepository.shareTaskList(taskListId);
+  }
 }

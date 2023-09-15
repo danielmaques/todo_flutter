@@ -5,11 +5,15 @@ import '../../data/model/task_model.dart';
 
 class TaskEditPage extends StatefulWidget {
   const TaskEditPage({
-    super.key,
+    Key? key,
     required this.controller,
-  });
+    this.title,
+    this.taskKey,
+  }) : super(key: key);
 
   final TasksController controller;
+  final String? title;
+  final String? taskKey;
 
   @override
   State<TaskEditPage> createState() => _TaskEditPageState();
@@ -17,6 +21,16 @@ class TaskEditPage extends StatefulWidget {
 
 class _TaskEditPageState extends State<TaskEditPage> {
   final _formKey = GlobalKey<FormState>();
+  bool isSwitchOn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.shareTaskList(widget.taskKey!);
+    if (widget.title != null) {
+      widget.controller.title.value.text = widget.title!;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +40,9 @@ class _TaskEditPageState extends State<TaskEditPage> {
         title: const Text('Task Edit'),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              widget.controller.sharedTaskLists.value;
+            },
             icon: const Icon(Icons.link),
           ),
         ],
@@ -38,7 +54,7 @@ class _TaskEditPageState extends State<TaskEditPage> {
           child: Column(
             children: [
               TextFormField(
-                controller: widget.controller.title,
+                controller: widget.controller.title.value,
                 textCapitalization: TextCapitalization.sentences,
                 decoration: const InputDecoration(
                   hintText: 'Título',
@@ -57,13 +73,13 @@ class _TaskEditPageState extends State<TaskEditPage> {
                 },
                 onSaved: (value) {
                   setState(() {
-                    widget.controller.title.text = value!;
+                    widget.controller.title.value.text = value!;
                   });
                 },
               ),
               const SizedBox(height: 20),
               TextFormField(
-                controller: widget.controller.note,
+                controller: widget.controller.note.value,
                 textCapitalization: TextCapitalization.sentences,
                 maxLines: 20,
                 decoration: const InputDecoration(
@@ -83,10 +99,11 @@ class _TaskEditPageState extends State<TaskEditPage> {
                 },
                 onSaved: (value) {
                   setState(() {
-                    widget.controller.note.text = value!;
+                    widget.controller.note.value.text = value!;
                   });
                 },
               ),
+              const SizedBox(height: 20),
               const Spacer(),
               Material(
                 child: InkWell(
@@ -94,24 +111,41 @@ class _TaskEditPageState extends State<TaskEditPage> {
                     if (_formKey.currentState!.validate()) {
                       _formKey.currentState!.save();
 
-                      // Crie uma instância da tarefa
                       Task newTask = Task(
-                        title: widget.controller.title.text,
-                      ); // Adicione outros campos conforme necessário
+                        title: widget.controller.title.value.text,
+                        taskKey: widget.taskKey,
+                      );
 
-                      // Adicione a tarefa usando o TasksController
-                      widget.controller.addTask(newTask).then((_) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Tarefa adicionada com sucesso!')),
-                        );
-                      }).catchError((error) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content:
-                                  Text('Erro ao adicionar tarefa: $error')),
-                        );
-                      });
+                      // Verifica se o título da tarefa é vazio ou não
+                      if (widget.title == null || widget.title!.isEmpty) {
+                        widget.controller.addTask(newTask).then((_) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content:
+                                    Text('Tarefa adicionada com sucesso!')),
+                          );
+                        }).catchError((error) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content:
+                                    Text('Erro ao adicionar tarefa: $error')),
+                          );
+                        });
+                      } else {
+                        widget.controller.updateTask(newTask).then((_) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content:
+                                    Text('Tarefa atualizada com sucesso!')),
+                          );
+                        }).catchError((error) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content:
+                                    Text('Erro ao atualizar tarefa: $error')),
+                          );
+                        });
+                      }
                     }
                   },
                   highlightColor: Colors.blueAccent.withOpacity(0.5),

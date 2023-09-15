@@ -20,8 +20,13 @@ class TaskEditModule extends Module {
 
   @override
   void routes(r) {
-    r.child('/',
-        child: (context) =>
-            TaskEditPage(controller: Modular.get<TasksController>()));
+    r.child(
+      '/',
+      child: (context) => TaskEditPage(
+        controller: Modular.get<TasksController>(),
+        title: r.args.data['title'],
+        taskKey: r.args.data['taskKey'],
+      ),
+    );
   }
 }

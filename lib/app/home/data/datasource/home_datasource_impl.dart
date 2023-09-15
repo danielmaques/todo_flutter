@@ -9,14 +9,23 @@ class HomeDataSourceImpl implements HomeDataSource {
 
   @override
   Future<List<Task>> listTasks() async {
-    DatabaseEvent event = await _tasksRef.once();
-    DataSnapshot snapshot = event.snapshot;
+    final DataSnapshot snapshot = (await _tasksRef.once()).snapshot;
+
     List<Task> tasks = [];
-    if (snapshot.value != null) {
-      (snapshot.value as Map<dynamic, dynamic>).forEach((key, value) {
-        tasks.add(Task.fromSnapshot(snapshot.child(key.toString())));
+
+    if (snapshot.value is Map) {
+      Map<dynamic, dynamic> rawTasksData =
+          snapshot.value as Map<dynamic, dynamic>;
+
+      rawTasksData.forEach((key, value) {
+        if (key is String && value is Map) {
+          Map<String, dynamic> taskData = Map<String, dynamic>.from(value);
+          taskData['taskKey'] = key; // Adicionando o 'taskKey' ao mapa
+          tasks.add(Task.fromMap(taskData));
+        }
       });
     }
+
     return tasks;
   }
 }
