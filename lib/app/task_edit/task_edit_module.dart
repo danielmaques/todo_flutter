@@ -24,8 +24,9 @@ class TaskEditModule extends Module {
       '/',
       child: (context) => TaskEditPage(
         controller: Modular.get<TasksController>(),
-        title: r.args.data['title'],
-        taskKey: r.args.data['taskKey'],
+        title: r.args.data?['title'] ?? '',
+        note: r.args.data?['note'] ?? '',
+        taskKey: r.args.data?['taskKey'] ?? '',
       ),
     );
   }

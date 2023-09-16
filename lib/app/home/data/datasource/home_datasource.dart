@@ -1,5 +1,5 @@
-import '../../../task_edit/data/model/task_model.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 abstract class HomeDataSource {
-  Future<List<Task>> listTasks();
+  Future<DataSnapshot> getTasks();
 }

@@ -34,7 +34,8 @@ class TaskDataSourceImpl implements TaskEditDataSource {
       List<Task> tasks = [];
       if (event.snapshot.value != null) {
         (event.snapshot.value as Map<dynamic, dynamic>).forEach((key, value) {
-          tasks.add(Task.fromSnapshot(event.snapshot.child(key)));
+          var taskData = value as Map<dynamic, dynamic>;
+          tasks.add(Task.fromKeyAndMap(key, taskData));
         });
       }
       return tasks;

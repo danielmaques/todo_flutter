@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:todo/app/task_edit/ui/controller/task_edit_controller.dart';
 
 import '../../data/model/task_model.dart';
@@ -8,11 +9,13 @@ class TaskEditPage extends StatefulWidget {
     Key? key,
     required this.controller,
     this.title,
+    this.note,
     this.taskKey,
   }) : super(key: key);
 
   final TasksController controller;
   final String? title;
+  final String? note;
   final String? taskKey;
 
   @override
@@ -21,14 +24,20 @@ class TaskEditPage extends StatefulWidget {
 
 class _TaskEditPageState extends State<TaskEditPage> {
   final _formKey = GlobalKey<FormState>();
-  bool isSwitchOn = false;
+  bool isCheck = false;
+  List<TaskItem> taskItems = [];
 
   @override
   void initState() {
     super.initState();
-    widget.controller.shareTaskList(widget.taskKey!);
+    if (widget.taskKey != null) {
+      widget.controller.shareTaskList(widget.taskKey!);
+    }
     if (widget.title != null) {
       widget.controller.title.value.text = widget.title!;
+    }
+    if (widget.note != null) {
+      widget.controller.note.value.text = widget.note!;
     }
   }
 
@@ -39,11 +48,68 @@ class _TaskEditPageState extends State<TaskEditPage> {
         centerTitle: true,
         title: const Text('Task Edit'),
         actions: [
-          IconButton(
-            onPressed: () {
-              widget.controller.sharedTaskLists.value;
-            },
-            icon: const Icon(Icons.link),
+          Row(
+            children: [
+              IconButton(
+                onPressed: () async {
+                  await Clipboard.setData(ClipboardData(
+                      text: widget.controller.sharedTaskLists.value));
+
+                  if (await Clipboard.getData(Clipboard.kTextPlain) != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content:
+                            Text('Link copiado para a área de transferência.'),
+                      ),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.link),
+              ),
+              IconButton(
+                onPressed: () async {
+                  if (_formKey.currentState!.validate()) {
+                    _formKey.currentState!.save();
+
+                    Task newTask = Task(
+                      title: widget.controller.title.value.text,
+                      note: widget.controller.note.value.text,
+                      taskKey: widget.taskKey,
+                      task: taskItems,
+                    );
+
+                    if (widget.title == null || widget.title!.isEmpty) {
+                      widget.controller.addTask(newTask).then((_) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Tarefa adicionada com sucesso!')),
+                        );
+                      }).catchError((error) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content:
+                                  Text('Erro ao adicionar tarefa: $error')),
+                        );
+                      });
+                    } else {
+                      widget.controller.updateTask(newTask).then((_) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Tarefa atualizada com sucesso!')),
+                        );
+                      }).catchError((error) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content:
+                                  Text('Erro ao atualizar tarefa: $error')),
+                        );
+                      });
+                    }
+                  }
+                },
+                icon: const Icon(Icons.save),
+              ),
+            ],
           ),
         ],
       ),
@@ -81,9 +147,9 @@ class _TaskEditPageState extends State<TaskEditPage> {
               TextFormField(
                 controller: widget.controller.note.value,
                 textCapitalization: TextCapitalization.sentences,
-                maxLines: 20,
+                maxLines: 3,
                 decoration: const InputDecoration(
-                  hintText: 'Anotações',
+                  hintText: 'Descrição',
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(
@@ -93,7 +159,7 @@ class _TaskEditPageState extends State<TaskEditPage> {
                 ),
                 validator: (value) {
                   if (value!.isEmpty) {
-                    return 'Adicione uma anotação';
+                    return 'Adicione uma descrição';
                   }
                   return null;
                 },
@@ -104,74 +170,64 @@ class _TaskEditPageState extends State<TaskEditPage> {
                 },
               ),
               const SizedBox(height: 20),
-              const Spacer(),
-              Material(
-                child: InkWell(
-                  onTap: () {
-                    if (_formKey.currentState!.validate()) {
-                      _formKey.currentState!.save();
-
-                      Task newTask = Task(
-                        title: widget.controller.title.value.text,
-                        taskKey: widget.taskKey,
-                      );
-
-                      // Verifica se o título da tarefa é vazio ou não
-                      if (widget.title == null || widget.title!.isEmpty) {
-                        widget.controller.addTask(newTask).then((_) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content:
-                                    Text('Tarefa adicionada com sucesso!')),
-                          );
-                        }).catchError((error) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content:
-                                    Text('Erro ao adicionar tarefa: $error')),
-                          );
-                        });
-                      } else {
-                        widget.controller.updateTask(newTask).then((_) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content:
-                                    Text('Tarefa atualizada com sucesso!')),
-                          );
-                        }).catchError((error) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content:
-                                    Text('Erro ao atualizar tarefa: $error')),
-                          );
-                        });
-                      }
-                    }
-                  },
-                  highlightColor: Colors.blueAccent.withOpacity(0.5),
-                  splashColor: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(13),
-                  child: Ink(
-                    height: 50,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(13),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'Salvar',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                        ),
+              ListView.builder(
+                itemCount: taskItems.length,
+                shrinkWrap: true,
+                itemBuilder: (context, index) {
+                  final taskItem = taskItems[index];
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                      child: Row(
+                        children: [
+                          Checkbox(
+                            value: taskItem.isCheck,
+                            onChanged: (value) {
+                              setState(() {
+                                taskItem.isCheck = value!;
+                              });
+                            },
+                          ),
+                          Expanded(
+                            child: TextFormField(
+                              controller: taskItem.titleController,
+                              textCapitalization: TextCapitalization.sentences,
+                              decoration: const InputDecoration(
+                                hintText: 'Tarefa',
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(13)),
+                                  borderSide: BorderSide.none,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                ),
-              )
+                  );
+                },
+              ),
             ],
           ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            taskItems.add(TaskItem(
+                isCheck: false, titleController: TextEditingController()));
+          });
+        },
+        child: const Icon(
+          Icons.check_box_outlined,
         ),
       ),
     );

@@ -1,16 +1,21 @@
 import 'package:flutter/foundation.dart';
-
-import '../../../task_edit/data/model/task_model.dart';
-import '../../domain/usecase/home_usecase.dart';
+import 'package:todo/app/home/domain/usecase/home_usecase.dart';
+import 'package:todo/app/task_edit/data/model/task_model.dart';
 
 class HomeController {
-  final HomeUseCase _homeUseCase;
+  final HomeUseCase useCase;
 
-  HomeController(this._homeUseCase);
+  HomeController(this.useCase);
 
   final ValueNotifier<List<Task>> tasksNotifier = ValueNotifier<List<Task>>([]);
+  List<Task> get tasks => tasksNotifier.value;
 
-  void fetchTasks() async {
-    tasksNotifier.value = await _homeUseCase.listTasks();
+  Future<void> fetchTasks() async {
+    try {
+      List<Task> tasks = await useCase.getTasks();
+      tasksNotifier.value = tasks;
+    } catch (e) {
+      print("Erro ao buscar tasks: $e");
+    }
   }
 }
