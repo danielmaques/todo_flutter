@@ -21,12 +21,10 @@ class TasksController {
     return useCase.getTasksStream();
   }
 
-  // Adicionar uma nova tarefa
   Future<void> addTask(Task task) {
     return useCase.addTask(task);
   }
 
-  // Atualizar uma tarefa existente
   Future<void> updateTask(Task task) {
     return useCase.updateTask(task);
   }
@@ -34,11 +32,5 @@ class TasksController {
   // Deletar uma tarefa
   Future<void> deleteTask(Task task) {
     return useCase.deleteTask(task);
-  }
-
-  // Compartilhar uma lista de tarefas e obter um código único
-  Future<void> shareTaskList(String taskListId) async {
-    String uniqueCode = await useCase.shareTaskList(taskListId);
-    sharedTaskLists.value = uniqueCode;
   }
 }

@@ -1,13 +1,14 @@
-import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'home_datasource.dart';
 
 class HomeDataSourceImpl implements HomeDataSource {
-  final DatabaseReference _databaseReference =
-      FirebaseDatabase.instance.ref().child('tasks');
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final CollectionReference _tasksCollection =
+      FirebaseFirestore.instance.collection('tasks');
 
   @override
-  Future<DataSnapshot> getTasks() async {
-    return (await _databaseReference.once()).snapshot;
+  Future<QuerySnapshot> getTasks() async {
+    return await _tasksCollection.get();
   }
 }

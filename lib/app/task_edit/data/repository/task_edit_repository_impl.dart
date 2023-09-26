@@ -27,9 +27,4 @@ class TaskEditRepositoryImpl implements TaskEditRepository {
   Stream<List<Task>> getTasksStream() {
     return _dataSource.getTasksStream();
   }
-  
-  @override
-  Future<String> shareTaskList(String taskListId) {
-    return _dataSource.shareTaskList(taskListId);
-  }
 }

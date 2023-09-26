@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:todo/app/task_edit/ui/controller/task_edit_controller.dart';
 
 import '../../data/model/task_model.dart';
@@ -30,9 +29,6 @@ class _TaskEditPageState extends State<TaskEditPage> {
   @override
   void initState() {
     super.initState();
-    if (widget.taskKey != null) {
-      widget.controller.shareTaskList(widget.taskKey!);
-    }
     if (widget.title != null) {
       widget.controller.title.value.text = widget.title!;
     }
@@ -50,22 +46,6 @@ class _TaskEditPageState extends State<TaskEditPage> {
         actions: [
           Row(
             children: [
-              IconButton(
-                onPressed: () async {
-                  await Clipboard.setData(ClipboardData(
-                      text: widget.controller.sharedTaskLists.value));
-
-                  if (await Clipboard.getData(Clipboard.kTextPlain) != null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content:
-                            Text('Link copiado para a área de transferência.'),
-                      ),
-                    );
-                  }
-                },
-                icon: const Icon(Icons.link),
-              ),
               IconButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {

@@ -1,17 +1,23 @@
-import 'dart:math';
-
-import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:todo/app/task_edit/data/model/task_model.dart';
 
 import 'task_edit_datasource.dart';
 
 class TaskDataSourceImpl implements TaskEditDataSource {
-  final DatabaseReference _tasksRef =
-      FirebaseDatabase.instance.ref().child('tasks');
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   Future<void> addTask(Task task) {
-    return _tasksRef.push().set(task.toJson());
+    final Map<String, dynamic> taskData = {
+      'title': task.title,
+      'note': task.note,
+      'task': task.task?.map((item) => item.toJson()).toList(),
+      'isDone': task.isDone,
+      'scheduledTime': task.scheduledTime?.toUtc(),
+      'importanceLevel': task.importanceLevel,
+    };
+
+    return _firestore.collection('tasks').add(taskData);
   }
 
   @override
@@ -20,40 +26,33 @@ class TaskDataSourceImpl implements TaskEditDataSource {
       throw ArgumentError(
           'A chave da tarefa não pode ser nula ao atualizar a tarefa.');
     }
-    return _tasksRef.child(task.taskKey!).update(task.toJson());
+
+    final Map<String, dynamic> taskData = {
+      'title': task.title,
+      'note': task.note,
+      'task': task.task?.map((item) => item.toJson()).toList(),
+      'isDone': task.isDone,
+      'scheduledTime': task.scheduledTime?.toUtc(),
+      'importanceLevel': task.importanceLevel,
+    };
+
+    return _firestore.collection('tasks').doc(task.taskKey!).set(taskData);
   }
 
   @override
   Future<void> deleteTask(Task task) {
-    return _tasksRef.child(task.taskKey!).remove();
+    return _firestore.collection('tasks').doc(task.taskKey!).delete();
   }
 
   @override
   Stream<List<Task>> getTasksStream() {
-    return _tasksRef.onValue.map((event) {
+    return _firestore.collection('tasks').snapshots().map((snapshot) {
       List<Task> tasks = [];
-      if (event.snapshot.value != null) {
-        (event.snapshot.value as Map<dynamic, dynamic>).forEach((key, value) {
-          var taskData = value as Map<dynamic, dynamic>;
-          tasks.add(Task.fromKeyAndMap(key, taskData));
-        });
+      for (var doc in snapshot.docs) {
+        var taskData = doc.data();
+        tasks.add(Task.fromKeyAndMap(doc.id, taskData));
       }
       return tasks;
     });
-  }
-
-  String _generateUniqueCode() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    return List.generate(8, (index) => chars[Random().nextInt(chars.length)])
-        .join();
-  }
-
-  @override
-  Future<String> shareTaskList(String taskListId) async {
-    final uniqueCode = _generateUniqueCode();
-
-    await _tasksRef.child('sharedTaskLists').child(uniqueCode).set(taskListId);
-
-    return uniqueCode;
   }
 }

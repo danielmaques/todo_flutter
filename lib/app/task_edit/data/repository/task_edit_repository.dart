@@ -5,5 +5,4 @@ abstract class TaskEditRepository {
   Future<void> updateTask(Task task);
   Future<void> deleteTask(Task task);
   Stream<List<Task>> getTasksStream();
-  Future<String> shareTaskList(String taskListId);
 }

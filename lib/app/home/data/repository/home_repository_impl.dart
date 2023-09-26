@@ -1,7 +1,7 @@
-import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:todo/app/home/data/datasource/home_datasource.dart';
+import 'package:todo/app/task_edit/data/model/task_model.dart';
 
-import '../../../task_edit/data/model/task_model.dart';
 import 'home_repository.dart';
 
 class HomeRepositoryImpl implements HomeRepository {
@@ -11,15 +11,12 @@ class HomeRepositoryImpl implements HomeRepository {
 
   @override
   Future<List<Task>> fetchTasks() async {
-    DataSnapshot snapshot = await _homeDataSource.getTasks();
+    QuerySnapshot snapshot = await _homeDataSource.getTasks();
     List<Task> tasks = [];
 
-    if (snapshot.value != null) {
-      Map<dynamic, dynamic> tasksMap = snapshot.value as Map<dynamic, dynamic>;
-      tasksMap.forEach((key, value) {
-        var taskData = value as Map<dynamic, dynamic>;
-        tasks.add(Task.fromKeyAndMap(key, taskData));
-      });
+    for (var doc in snapshot.docs) {
+      var taskData = doc.data() as Map<String, dynamic>;
+      tasks.add(Task.fromKeyAndMap(doc.id, taskData));
     }
 
     return tasks;

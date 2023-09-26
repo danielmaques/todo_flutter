@@ -1,5 +1,5 @@
-import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 abstract class HomeDataSource {
-  Future<DataSnapshot> getTasks();
+  Future<QuerySnapshot> getTasks();
 }

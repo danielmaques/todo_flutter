@@ -27,9 +27,4 @@ class TaskEditUseCaseImpl implements TaskEditUseCase {
   Stream<List<Task>> getTasksStream() {
     return _taskEditRepository.getTasksStream();
   }
-
-  @override
-  Future<String> shareTaskList(String taskListId) {
-    return _taskEditRepository.shareTaskList(taskListId);
-  }
 }
